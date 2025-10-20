@@ -1,17 +1,23 @@
 (ns antoine247.core
-  (:require [replicant.dom :as r]))
+  (:require [replicant.dom :as r]
+            [antoine247.counter :as counter]))
 
-(defonce state (atom {:number 0}))
 
-(swap! state assoc :number 2)
-
-(defn render-ui []
+(defn render-ui [state]
   (r/render 
    js/document.body 
-   [:div.m-8
-    [:h1.text-lg "Counter"]
-    [:div.flex.gap-4.items-center
-     [:div "Number is " (:number @state)]
-     [:button.btn "Count!"]]]))
+   (counter/render-ui state)))
 
-(add-watch state ::render (fn [_ _ _ _] (render-ui)))
+(defn init [store] 
+  (add-watch store ::render (fn [_ _ _ new-state] 
+                              (render-ui new-state)))
+  
+  (r/set-dispatch!
+   (fn [_ event-data]
+     (doseq [[action & args] event-data]
+       (case action
+         ::counter/inc-number
+         (swap! store update :number inc)))))
+  
+  
+  (swap! store assoc ::loaded-at (.getTime (js/Date.))))
