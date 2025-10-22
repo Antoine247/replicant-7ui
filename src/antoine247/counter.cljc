@@ -1,5 +1,9 @@
 (ns antoine247.counter)
 
+(defn perform-action [state [action]]
+  (when (= ::inc-number action)
+   [[:effect/assoc-in [:number] (inc (:number state))]]))
+
 (defn render-ui [state]
   [:div.m-8
    [:h1.text-lg "Counter!"]

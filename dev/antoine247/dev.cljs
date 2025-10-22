@@ -8,4 +8,4 @@
 
 (defn ^:dev/after-load reload []
   (core/init store)
-  (println "reloaded!!" (:number @store)))
+  (println "reloaded!!"))
