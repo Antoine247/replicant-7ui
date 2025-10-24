@@ -1,7 +1,9 @@
 (ns antoine247.core
   (:require [replicant.dom :as r]
             [antoine247.counter :as counter]
-            [antoine247.layout :as layout]))
+            [antoine247.layout :as layout]
+            [antoine247.temperature :as temp]
+            [clojure.walk :as walk]))
 
 (def views
   [{:id :counter
@@ -21,11 +23,15 @@
   (let [current-view (get-current-view state)]
     [:div.m-8
      (layout/tab-bar (get-current-view state)  views)
-     (case current-view
-       :counter
-       (counter/render-ui state)
-       
-       [:h1.text-lg "Select your UI of choice"])]))
+     [:div.m-8
+      (case current-view
+        :counter
+        (counter/render-ui state)
+
+        :temperatures
+        (temp/render-ui state)
+        
+        [:div.m-8 [:h1.text-lg "Select your UI of choice"]])]]))
 
 (defn perform-actions [state event-data]
   (mapcat
@@ -33,6 +39,7 @@
      (prn (first action) (rest action))
      (or (counter/perform-action state action)
          (layout/perform-action state action)
+         (temp/perform-action state action)
          (case (first action)
            :action/assoc-in
            [(into [:effect/assoc-in] (rest action))]
@@ -40,15 +47,27 @@
            (prn "Unknown action"))))
    event-data))
 
+(defn interpolate [event data]
+  (walk/postwalk
+   (fn [x]
+     (case x
+       :event.target/value-as-number (some-> event .-target .-valueAsNumber)
+       x))
+   data))
+
 (defn init [store] 
   (add-watch store ::render (fn [_ _ _ new-state]
                               (r/render
                                js/document.body
                                (render-ui new-state))))
   
+  
+  
   (r/set-dispatch!
-   (fn [_ event-data]
-     (->> (perform-actions @store event-data)
+   (fn [{:replicant/keys [dom-event]} event-data]
+     (js/console.log dom-event)
+     (->> (interpolate dom-event event-data)
+          (perform-actions @store)
           (run! #(process-effect store %)))))
   
   

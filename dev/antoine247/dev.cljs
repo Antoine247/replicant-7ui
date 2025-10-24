@@ -1,5 +1,9 @@
 (ns antoine247.dev
-  (:require [antoine247.core :as core]))
+  (:require [antoine247.core :as core]
+            [hyperfiddle.rcf :as rcf]))
+
+(rcf/enable!)
+
 
 (defonce store (atom {:number 0}))
 (defn main []
