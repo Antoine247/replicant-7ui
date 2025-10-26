@@ -2,6 +2,7 @@
   (:require [hyperfiddle.rcf :as rcf]
             [antoine247.temperature :as sut]))
 
+
 (rcf/tests
  "fahrenheit->celsius"
  (sut/fahrenheit->celsius 32) := 0
